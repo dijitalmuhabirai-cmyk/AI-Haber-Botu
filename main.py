@@ -1,30 +1,33 @@
 import feedparser
-import requests
+import tweepy
 import os
-from time import sleep
 
+# RSS kaynakları
 RSS_FEEDS = [
     "https://www.aa.com.tr/tr/rss/gundem",
     "https://www.trthaber.com/xml_mobile.xml"
 ]
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+# Twitter API bilgileri (GitHub Secrets'tan gelecek)
+API_KEY = os.getenv("TW_API_KEY")
+API_SECRET = os.getenv("TW_API_SECRET")
+ACCESS_TOKEN = os.getenv("TW_ACCESS_TOKEN")
+ACCESS_SECRET = os.getenv("TW_ACCESS_SECRET")
 
-posted = set()
+auth = tweepy.OAuthHandler(API_KEY, API_SECRET)
+auth.set_access_token(ACCESS_TOKEN, ACCESS_SECRET)
+api = tweepy.API(auth)
 
-def send_message(text):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    data = {"chat_id": CHAT_ID, "text": text}
-    requests.post(url, data=data)
+def fetch_and_tweet():
+    for url in RSS_FEEDS:
+        feed = feedparser.parse(url)
+        if feed.entries:
+            latest = feed.entries[0]
+            title = latest.title
+            link = latest.link
+            tweet = f"{title}\n{link}"
+            api.update_status(tweet)
+            print("Tweet atıldı:", tweet)
 
-while True:
-    for feed in RSS_FEEDS:
-        rss = feedparser.parse(feed)
-        for entry in rss.entries:
-            if entry.link not in posted:
-                posted.add(entry.link)
-                message = f"{entry.title}\n{entry.link}"
-                send_message(message)
-                sleep(1)
-    sleep(60)
+if __name__ == "__main__":
+    fetch_and_tweet()
