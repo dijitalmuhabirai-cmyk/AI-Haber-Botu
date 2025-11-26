@@ -3,28 +3,27 @@ name: Run Bot
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * * * *"  # Runs every 10 minutes
 
 jobs:
-  run-bot:
+  run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Kodu çek
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Python kur
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: '3.10'
 
-      - name: Gereksinimleri yükle
-        run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
 
-      - name: Botu çalıştır
+      - name: Run bot
         env:
-          X_API_KEY: ${{ secrets.X_API_KEY }}
-          X_API_SECRET: ${{ secrets.X_API_SECRET }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
-        run: python bot.py
+          BEARER_TOKEN: ${{ secrets.BEARER_TOKEN }}
+        run: |
+          python bot.py
