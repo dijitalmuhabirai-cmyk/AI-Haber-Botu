@@ -31,3 +31,16 @@ def fetch_and_tweet():
 
 if __name__ == "__main__":
     fetch_and_tweet()
+from bot import get_latest_news, post_to_x
+
+def main():
+    news_list = get_latest_news()
+    if not news_list:
+        print("No news found.")
+        return
+    
+    for news in news_list:
+        post_to_x(news)
+
+if __name__ == "__main__":
+    main()
